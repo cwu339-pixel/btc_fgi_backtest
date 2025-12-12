@@ -1,0 +1,23 @@
+# Environments
+.env
+*.env
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+.ipynb_checkpoints/
+
+# Editors/OS
+.DS_Store
+.idea/
+.vscode/
+
+# Data (raw/not tracked)
+data/*.xlsx
+data/*.json
+data/derivatives/*.csv
+
+# Secrets
+*wallet*.json
+*private*key*.json
