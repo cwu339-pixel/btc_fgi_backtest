@@ -54,7 +54,10 @@ def load_funding_daily(path: Path | str = DEFAULT_FUNDING_PATH) -> pd.DataFrame:
     """Aggregate intraday funding rates into daily sums; returns date-indexed funding_rate."""
     path = Path(path)
     _ensure_exists(path)
-    df = pd.read_csv(path)
+    if path.suffix.lower() == ".feather":
+        df = pd.read_feather(path)
+    else:
+        df = pd.read_csv(path)
     if df.empty:
         return pd.DataFrame(columns=["funding_rate"]).set_index(pd.Index([], name="date"))
     df = df.copy()
@@ -62,7 +65,7 @@ def load_funding_daily(path: Path | str = DEFAULT_FUNDING_PATH) -> pd.DataFrame:
         df, ["fundingTime", "timestamp", "time", "Time", "date", "Date"]
     )
     df["fundingRate"] = _coerce_numeric(
-        df, ["fundingRate", "Funding Rate", "rate", "funding_rate"]
+        df, ["fundingRate", "Funding Rate", "rate", "funding_rate", "funding_1h", "funding_8h_roll"]
     )
     daily = (
         df.groupby("date")["fundingRate"]
@@ -73,10 +76,13 @@ def load_funding_daily(path: Path | str = DEFAULT_FUNDING_PATH) -> pd.DataFrame:
 
 
 def load_oi_daily(path: Path | str = DEFAULT_OI_PATH) -> pd.DataFrame:
-    """Aggregate intraday open interest into end-of-day OI; returns date-indexed oi."""
+    """Aggregate intraday open interest metrics into end-of-day daily factors."""
     path = Path(path)
     _ensure_exists(path)
-    df = pd.read_csv(path)
+    if path.suffix.lower() == ".feather":
+        df = pd.read_feather(path)
+    else:
+        df = pd.read_csv(path)
     if df.empty:
         return pd.DataFrame(columns=["oi"]).set_index(pd.Index([], name="date"))
     df = df.copy()
@@ -85,6 +91,28 @@ def load_oi_daily(path: Path | str = DEFAULT_OI_PATH) -> pd.DataFrame:
     )
     df["date"] = df["timestamp"].dt.normalize()
     df["oi"] = _coerce_numeric(df, ["openInterest", "Open Interest", "oi", "open_interest"])
+    optional_numeric_map = {
+        "open_interest_value": ["openInterestValue", "sumOpenInterestValue", "oiValue"],
+        "top_trader_count_long_short_ratio": [
+            "topTraderCountLongShortRatio",
+            "count_toptrader_long_short_ratio",
+        ],
+        "top_trader_sum_long_short_ratio": [
+            "topTraderSumLongShortRatio",
+            "sum_toptrader_long_short_ratio",
+        ],
+        "count_long_short_ratio": ["countLongShortRatio", "count_long_short_ratio"],
+        "taker_long_short_vol_ratio": [
+            "takerLongShortVolRatio",
+            "sum_taker_long_short_vol_ratio",
+        ],
+    }
+    for out_col, candidates in optional_numeric_map.items():
+        try:
+            df[out_col] = _coerce_numeric(df, candidates)
+        except KeyError:
+            continue
     df = df.sort_values("timestamp")
     last_per_day = df.groupby("date").tail(1).set_index("date")
-    return last_per_day[["oi"]]
+    keep = ["oi", *[col for col in optional_numeric_map if col in last_per_day.columns]]
+    return last_per_day[keep]

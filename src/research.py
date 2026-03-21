@@ -290,7 +290,7 @@ def build_oi_factors(df: pd.DataFrame) -> pd.DataFrame:
     if "open_interest" not in df.columns:
         raise KeyError("Expected 'open_interest' column in dataframe for OI factors.")
     oi = df["open_interest"].astype(float)
-    oi_change_7d = oi.pct_change(periods=7)
+    oi_change_7d = oi.pct_change(periods=7, fill_method=None)
     oi_mean_30d = oi.rolling(window=30, min_periods=10).mean()
     oi_std_30d = oi.rolling(window=30, min_periods=10).std()
     oi_zscore_30d = (oi - oi_mean_30d) / oi_std_30d

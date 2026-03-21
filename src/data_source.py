@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -21,10 +22,26 @@ def _ensure_exists(path: Path) -> None:
         raise FileNotFoundError(path)
 
 
-def load_price(path: Path = BITCOIN_PATH) -> pd.DataFrame:
+def default_bitcoin_path() -> Path:
+    env_path = os.environ.get("BTC_FGI_PRICE_PATH")
+    if env_path:
+        return Path(env_path)
+    csv_path = DATA_DIR / "bitcoin.csv"
+    if csv_path.exists():
+        return csv_path
+    return BITCOIN_PATH
+
+
+def load_price(path: Path | None = None) -> pd.DataFrame:
     """Load BTC OHLCV daily data from Excel and return a date-indexed DataFrame."""
+    path = path or default_bitcoin_path()
     _ensure_exists(path)
-    df = pd.read_excel(path)
+    if path.suffix.lower() == ".csv":
+        df = pd.read_csv(path)
+    elif path.suffix.lower() == ".feather":
+        df = pd.read_feather(path)
+    else:
+        df = pd.read_excel(path)
     lower_map = {col.lower(): col for col in df.columns}
 
     if "date" not in df.columns:
