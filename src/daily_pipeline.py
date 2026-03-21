@@ -762,17 +762,24 @@ def run_shadow_reports() -> tuple[pd.DataFrame, dict[str, Any], pd.DataFrame, di
     production_signal.main()
     production_cross_sectional.main()
     production_shock_reversal.main()
-    stat_stablecoin_macro_hint.main()
-    stat_vix_hint.main()
-    stat_shadow_divergence.main()
-    stat_shadow_dashboard.main()
-    stat_cross_sectional_shadow.main()
-    stat_stablecoin_shadow.main()
-    stat_stablecoin_shadow_gate.main()
-    stat_shock_shadow.main()
-    stat_risk_budget_sheet.main()
-    stat_capacity_sheet.main()
-    stat_weekly_attribution_sheet.main()
+    optional_reports = [
+        ("stat_stablecoin_macro_hint", stat_stablecoin_macro_hint.main),
+        ("stat_vix_hint", stat_vix_hint.main),
+        ("stat_shadow_divergence", stat_shadow_divergence.main),
+        ("stat_shadow_dashboard", stat_shadow_dashboard.main),
+        ("stat_cross_sectional_shadow", stat_cross_sectional_shadow.main),
+        ("stat_stablecoin_shadow", stat_stablecoin_shadow.main),
+        ("stat_stablecoin_shadow_gate", stat_stablecoin_shadow_gate.main),
+        ("stat_shock_shadow", stat_shock_shadow.main),
+        ("stat_risk_budget_sheet", stat_risk_budget_sheet.main),
+        ("stat_capacity_sheet", stat_capacity_sheet.main),
+        ("stat_weekly_attribution_sheet", stat_weekly_attribution_sheet.main),
+    ]
+    for report_name, report_func in optional_reports:
+        try:
+            report_func()
+        except FileNotFoundError as exc:
+            write_log(f"warn optional_report_missing report={report_name} error={exc}")
     return (
         signal_log,
         latest_payload,
