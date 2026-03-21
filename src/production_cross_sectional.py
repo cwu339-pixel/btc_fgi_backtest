@@ -37,11 +37,15 @@ RESEARCH_CANDIDATE_V1 = {
 
 def build_cross_sectional_payloads(config: dict | None = None, label: str = "cross_1d") -> tuple[pd.DataFrame, dict]:
     cfg = dict(BEST_CONFIG if config is None else config)
-    close_df = build_panel(tuple(cfg["universe_assets"]))[list(cfg["universe_assets"])]
+    panel = build_panel(tuple(cfg["universe_assets"]))
+    available_assets = [asset for asset in cfg["universe_assets"] if asset in panel.columns]
+    if not available_assets:
+        raise FileNotFoundError("No local market source found for configured cross-sectional universe")
+    close_df = panel[available_assets]
     positions = build_positions(
         close_df=close_df,
         lookback=cfg["lookback"],
-        top_k=cfg["top_k"],
+        top_k=min(int(cfg["top_k"]), len(available_assets)),
         rebalance_days=cfg["rebalance_days"],
         ranking_method=cfg["ranking_method"],
         weighting_method=cfg["weighting_method"],
@@ -78,6 +82,7 @@ def build_cross_sectional_payloads(config: dict | None = None, label: str = "cro
         "signal_version": label,
         "date": latest_date.strftime("%Y-%m-%d"),
         "universe_assets": list(cfg["universe_assets"]),
+        "available_assets": available_assets,
         "selected_assets": active.index.tolist(),
         "selected_weights": selected_weights,
         "portfolio_equity": float(eq.iloc[-1]),
