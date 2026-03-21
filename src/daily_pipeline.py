@@ -486,7 +486,11 @@ def build_combo_stablecoin_candidate(combo_payload: dict[str, Any], asof_date_ut
     out["candidate_action"] = "same_as_combo"
     out["candidate_reason"] = ""
 
-    filt = load_stablecoin_macro_filter().copy()
+    try:
+        filt = load_stablecoin_macro_filter().copy()
+    except FileNotFoundError:
+        write_log("warn optional_filter_missing filter=stablecoin_macro")
+        return out
     filt["date"] = pd.to_datetime(filt["date"])
     row = filt.loc[filt["date"] <= pd.Timestamp(asof_date_utc)].sort_values("date").tail(1)
     if row.empty:
@@ -518,7 +522,11 @@ def build_combo_vix_candidate(combo_payload: dict[str, Any], asof_date_utc: str)
     out["candidate_action"] = "same_as_combo"
     out["candidate_reason"] = ""
 
-    filt = load_vix_filter().copy()
+    try:
+        filt = load_vix_filter().copy()
+    except FileNotFoundError:
+        write_log("warn optional_filter_missing filter=vix")
+        return out
     filt["date"] = pd.to_datetime(filt["date"])
     row = filt.loc[filt["date"] <= pd.Timestamp(asof_date_utc)].sort_values("date").tail(1)
     if row.empty:
