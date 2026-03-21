@@ -111,7 +111,14 @@ def select_universe(liquidity_threshold: float, universe_size: int) -> tuple[str
 
 @lru_cache(maxsize=None)
 def build_panel(assets: tuple[str, ...]) -> pd.DataFrame:
-    closes = {asset: load_asset_close(asset) for asset in assets}
+    closes: dict[str, pd.Series] = {}
+    for asset in assets:
+        try:
+            closes[asset] = load_asset_close(asset)
+        except FileNotFoundError:
+            continue
+    if not closes:
+        raise FileNotFoundError("No local market source found for configured assets")
     close_df = pd.DataFrame(closes).sort_index()
     close_df = close_df.dropna(how="all")
     ret_df = close_df.pct_change(fill_method=None)
