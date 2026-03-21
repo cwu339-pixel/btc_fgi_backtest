@@ -29,6 +29,9 @@ def default_bitcoin_path() -> Path:
     csv_path = DATA_DIR / "bitcoin.csv"
     if csv_path.exists():
         return csv_path
+    market_csv_path = DATA_DIR / "market" / "binance_spot_daily_BTCUSDT.csv"
+    if market_csv_path.exists():
+        return market_csv_path
     return BITCOIN_PATH
 
 

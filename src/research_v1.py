@@ -142,7 +142,10 @@ def default_asset_paths(asset: str) -> dict[str, Path]:
 def build_base_df_for_asset(spec: ResearchSpec) -> pd.DataFrame:
     paths = default_asset_paths(spec.asset)
     price_df = load_price(paths["price_path"])
-    fgi_df = load_fgi(paths["fgi_path"])
+    try:
+        fgi_df = load_fgi(paths["fgi_path"])
+    except FileNotFoundError:
+        fgi_df = pd.DataFrame(index=price_df.index, columns=["fgi"])
     df = price_df.join(fgi_df, how="left")
 
     try:
