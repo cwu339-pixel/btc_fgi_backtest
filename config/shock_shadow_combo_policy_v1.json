@@ -1,0 +1,7 @@
+{
+  "policy_name": "shock25_combo75",
+  "shock_weight": 0.25,
+  "combo_weight": 0.75,
+  "effective_date_utc": "2026-03-03",
+  "frozen_for_forward_shadow": true
+}

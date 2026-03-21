@@ -1,0 +1,29 @@
+{
+  "policy_name": "multi_strategy_risk_budget_v1",
+  "effective_date_utc": "2026-03-03",
+  "frozen_for_forward_shadow": true,
+  "portfolio": {
+    "max_gross_exposure": 1.0,
+    "max_net_exposure": 1.0,
+    "max_weekly_drawdown": 0.12,
+    "kill_switch_on_data_halt": true,
+    "kill_switch_on_three_halts_30d": true
+  },
+  "pillars": {
+    "btc_v2": {
+      "role": "alpha",
+      "risk_budget_share": 0.35,
+      "max_weight": 0.25
+    },
+    "cross_sectional": {
+      "role": "alpha",
+      "risk_budget_share": 0.45,
+      "max_weight": 0.75
+    },
+    "shock_reversal": {
+      "role": "hedge",
+      "risk_budget_share": 0.20,
+      "max_weight": 0.25
+    }
+  }
+}

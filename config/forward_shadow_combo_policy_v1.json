@@ -1,0 +1,8 @@
+{
+  "policy_name": "btc25_cross75",
+  "btc_weight": 0.25,
+  "cross_weight": 0.75,
+  "effective_date_utc": "2026-03-03",
+  "frozen_for_forward_shadow": true,
+  "notes": "Frozen combo policy for the forward-shadow gate window. Do not change weights without starting a new version track."
+}
